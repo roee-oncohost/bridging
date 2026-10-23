@@ -1,0 +1,92 @@
+{  
+    "!OutputDirectory": "/home/qalab/workspace/sm6/tmpdir/OH2025_051",
+    "!SOMAmerReferenceSource": "references/7KL1/SD4.1ReV_7K_Annotated_SOMAmers.xlsx",
+    "!SampleWorkbooks": ["/home/qalab/workspace/sm6/workdir/OH2025_051/OH2025_051 Workbook.xlsx"],
+    "!SampleWorkbooksConfig": "workbook_configs/wkbk_config_7K_Rev6.yml",
+    "SiteId": "OH2025_051",
+    "!AgilentDirectory": "/home/qalab/workspace/sm6/workdir/OH2025_051",
+    "!AssayType": "PharmaServices",
+    "!AssayVersion": "v4.1",
+    "!AssayMenu": "7K",
+    "!MasterMixLot": "1",
+    "!AssayRobot": "Robot",
+    "!CreatedBy": "OncoHost",
+    "!ExpDate": "2024-03-10",
+    "Notes": "",
+    "!ProteinEffectiveDate": "2024-02-10",
+    "RunNotes": "",
+    "LabLocation": "OncoHost",
+    "StudyOrganism": "Human",
+    "CalibratorId": "200169",
+    "!StudyId": "OH2025_051",
+    "StudyMatrix": "EDTA Plasma",
+    "PlateType": "Prod",
+    "ReportConfig": {
+        "analysisSteps": [
+            {
+                "stepType": "hybNorm",
+                "referenceSource": "intraplate",
+                "includeSampleTypes": [
+                    "QC",
+                    "Calibrator",
+                    "Buffer"
+                ]
+            },
+            {
+                "stepName": "medNormInt",
+                "stepType": "medNorm",
+                "includeSampleTypes": [
+                    "Calibrator",
+                    "Buffer"
+                ],
+                "referenceSource": "intraplate",
+                "referenceFields": [
+                    "SampleId"
+                ]
+            },
+            {
+                "stepType": "plateScale",
+                "referenceSource": "references/7KL1/plasma/Reference_Cal_200169_Plasma_V4.1_Lot1.txt"
+            },
+            {
+                "stepType": "calibrate",
+                "referenceSource": "references/7KL1/plasma/Reference_Cal_200169_Plasma_V4.1_Lot1.txt",
+                "tailThreshold": 10.0
+            },
+            {
+                "stepName": "anmlQC",
+                "stepType": "ANML",
+                "effectSizeCutoff": 2.0,
+                "minFractionUsed": 0.3,
+                "includeSampleTypes": [
+                    "QC"
+                ],
+                "referenceSource": "references/7KL1/plasma/Reference_V4.1_Plasma_ANML.txt"
+            },
+            {
+                "stepType": "qcCheck",
+                "QCReferenceSource": "references/7KL1/plasma/Reference_V4.1_Plasma_QC_ANML_200170.txt",
+                "tailsCriteriaLower": 0.8,
+                "tailsCriteriaUpper": 1.2,
+                "tailThreshold": 15.0,
+                "prenormalized": true
+            },
+            {
+                "stepName": "anmlSMP",
+                "stepType": "ANML",
+                "effectSizeCutoff": 2.0,
+                "minFractionUsed": 0.3,
+                "includeSampleTypes": [
+                    "Sample"
+                ],
+                "referenceSource": "references/7KL1/plasma/Reference_V4.1_Plasma_ANML_STRECK.txt"
+            }
+        ],
+        "qualityReports": [
+            "SQS Report"
+        ],
+        "filter": {
+            "proteinEffectiveDate": ""
+        }
+    }
+}
