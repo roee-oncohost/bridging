@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "somalogic-bridging"
+version = "0.1.0"
+description = "Create and apply SomaLogic assay bridging factors and ANML reference files."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "openpyxl>=3.1",
+    "pandas>=2.0",
+]
+
+[project.optional-dependencies]
+analysis = [
+    "matplotlib>=3.8",
+    "scipy>=1.11",
+    "seaborn>=0.13",
+    "scikit-learn>=1.4",
+    "somadata>=1.2",
+]
+dev = [
+    "pytest>=8",
+]
+
+[tool.setuptools]
+packages = ["src", "somalogic_bridging"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

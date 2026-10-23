@@ -1,8 +1,6 @@
-from setuptools import setup, find_packages
+"""Compatibility shim; package metadata lives in pyproject.toml."""
+
+from setuptools import setup
 
 
-setup(
-    name="clean-code",
-    version="0.1",
-    packages=["src", "modeling"],  # Explicit list instead
-)
+setup()

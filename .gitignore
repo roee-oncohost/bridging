@@ -1,2 +1,15 @@
 bridging_env/
+.venv/
 data/
+results/
+projects/pre_post_bridging/results/
+*.pyc
+*.parquet
+*.txt
+*.xlsx
+src/__pycache__/
+*.egg-info
+__pycache__/
+.pytest_cache/
+build/
+dist/

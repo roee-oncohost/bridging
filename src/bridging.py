@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
 from src.dataframe_transformation import get_aptamers
 
@@ -264,6 +263,8 @@ def plot_mapping_analysis(edta_data, streck_data, bridged_data, variable_name="V
     - bridged_data: bridged streck data
     - variable_name: name for plot titles
     """
+    import matplotlib.pyplot as plt
+
     fig, axes = plt.subplots(2, 2, figsize=(12, 10))
     
     # Plot 1: Distributions comparison
