@@ -187,13 +187,13 @@ def read_workbook(workbook_path) -> pd.DataFrame:
     df_sheet4 = pd.read_excel(workbook_path, sheet_name=sheet_name_tab4, 
                               usecols=col_smb_tab4, skiprows=6, dtype={'NAME': str})
     df_data_tab4 = df_sheet4[df_sheet4['NAME'].notna()]
-    
+    df_data_tab4['Slide #'] = df_data_tab4['Slide #'].ffill()
     # Create a DICT of the Aliquots-Barcodes
     excel_df = pd.merge(df_data_tab3,
                     df_data_tab4,
                     how='inner',
                     left_on='SampleId', right_on='NAME').drop('NAME', axis=1)
-    excel_df['slide'] = excel_df['Slide #'].ffill()
+    excel_df['slide'] = excel_df['Slide #']
     excel_df.rename(columns={'PDF Subarray': 'pdf_subarray'}, inplace=True)
     return excel_df
 
@@ -232,18 +232,46 @@ def match_probe_aptamer(df):
 
 
 def transform_feature_df_MAD_bridging(df1, params):
+    hce_list = ['2171-12',
+            '2178-55',
+            '2194-91',
+            '2229-54',
+            '2249-25',
+            '2273-34',
+            '2288-7',
+            '2305-52',
+            '2312-13',
+            '2359-65',
+            '2430-52',
+            '2513-7']
     df = df1.copy()
     probe_to_aptamer_dict = match_probe_aptamer(df)
     original_columns = df.columns
     df['aptamer'] = df['ProbeName'].map(probe_to_aptamer_dict).fillna('other')
     df = aggregate(df)
     aptamers = list(probe_to_aptamer_dict.values())
-    df = transform_mad_log(df, params, aptamers)
+    aptamers_to_alter = [aptamer for aptamer in aptamers if aptamer not in hce_list]
+    df = transform_mad_log(df, params, aptamers_to_alter)
     # df['conversion_coefficient'] = df['aptamer'].map(params)
     # if file in streck_files:
     # df['gProcessedSignal'] = df['gProcessedSignal'] * df['conversion_coefficient']
     df = df[original_columns]
     return df
+
+def transform_feature_df_median_bridging(df1, params):
+    df = df1.copy()
+    probe_to_aptamer_dict = match_probe_aptamer(df)
+    original_columns = df.columns
+    df['aptamer'] = df['ProbeName'].map(probe_to_aptamer_dict).fillna('other')
+    df = aggregate(df)
+    aptamers = list(probe_to_aptamer_dict.values())
+    df = transform_median_only(df, params, aptamers)
+    # df['conversion_coefficient'] = df['aptamer'].map(params)
+    # if file in streck_files:
+    # df['gProcessedSignal'] = df['gProcessedSignal'] * df['conversion_coefficient']
+    df = df[original_columns]
+    return df
+
 
 
 def alter_scanner_file_MAD_bridging(input_path, file, output_path, conversion_coefficients, already_handled_files=[]):
@@ -277,6 +305,40 @@ def alter_scanner_file_MAD_bridging(input_path, file, output_path, conversion_co
     make_text_file(output_file_path, reconstituted_text)
     already_handled_files.append(file)
     return already_handled_files
+
+
+def alter_scanner_file_median_bridging(input_path, file, output_path, conversion_coefficients, already_handled_files=[]):
+    file_path = os.path.join(input_path, file)
+    # if file_path.endswith('.txt'):
+    text = read_text_file(file_path)
+    # if is_type_file:
+    print(f"Altered: {file}")
+    sections = get_sections(text)
+    dataframes_dict = {}
+    type_mappings = {}
+    for section in sections:
+        lines = section.strip().split('\n')
+        type_row, header_row, header_name, data_rows = analyze_lines(lines)
+        df = create_df(type_row, header_row, data_rows, header_name, type_mappings)
+        if header_name=='FEATURES':
+            df = transform_feature_df_median_bridging(df, conversion_coefficients)
+            # In alter_scanner_files, after creating the dataframe:
+# if header_name == 'FEATURES':
+            # print(f"File: {file}")
+            # print(f"gProcessedSignal dtype: {df['gProcessedSignal'].dtype}")
+            # print(f"Sample values: {df['gProcessedSignal'].head()}")
+            # print(f"Any NaN values: {df['gProcessedSignal'].isna().any()}")
+            # original_columns = df.columns
+        dataframes_dict[header_name] = df
+    reconstituted_text = dataframes_to_text(dataframes_dict, type_mappings)
+# else:
+    # reconstituted_text = text
+    output_file_path = os.path.join(output_path, file)
+    # if file not in already_handled_files:
+    make_text_file(output_file_path, reconstituted_text)
+    already_handled_files.append(file)
+    return already_handled_files
+
 
 
 def alter_scanner_files_MAD_bridging(text_path, workbook_path, params_paths, output_path): #, streck_wells_list=[]):
@@ -322,6 +384,52 @@ def alter_scanner_files_MAD_bridging(text_path, workbook_path, params_paths, out
         shutil.copy(os.path.join(text_path, file), output_path)
     print('Done!')
     # return reconstituted_texts
+
+
+def alter_scanner_files_median_bridging(text_path, workbook_path, params_paths, output_path): #, streck_wells_list=[]):
+    """
+    This method uses the previous ones to alter the scanner files
+
+    Args:
+        text_path (str): path to the original scanner files
+        workbook_path (str): path to the workbook
+        params_paths (dict): dictionary mapping sample types to their corresponding params file paths
+        output_path (str): path to the output folder
+        
+    """
+
+    workbook_df = read_workbook(workbook_path)
+    
+    os.makedirs(output_path, exist_ok=True)
+    shutil.copy(workbook_path, output_path)
+
+
+    files = [
+        f for f in os.listdir(text_path)
+        if os.path.isfile(os.path.join(text_path, f))
+    ]
+    text_files = [file for file in files if file.endswith('.txt')]
+    already_handled_files = []
+    for sample_type, params_path in params_paths.items():
+        with open(params_path, 'r') as fp:
+                params = json.load(fp)
+        samples_to_alter  = workbook_df[workbook_df[WORKBOOK_SAMPLE_MATRIX].isin([sample_type])]
+
+        samples_to_alter['filename'] = samples_to_alter.apply(match_file, axis=1, args=(text_files,))
+        type_files = samples_to_alter['filename'].to_list()
+        reconstituted_texts = {}
+        for file in type_files:
+            # output_file_path = os.path.join(output_path, file)
+            already_handled_files.append(alter_scanner_file_median_bridging(text_path, file, output_path, params, already_handled_files))
+            # reconstituted_texts[file] = reconstituted_text
+
+        # reconstituted_texts["streck_files"] = type_files 
+    files_to_copy = [text_file for text_file in text_files if text_file not in already_handled_files]
+    for file in files_to_copy:
+        shutil.copy(os.path.join(text_path, file), output_path)
+    print('Done!')
+    # return reconstituted_texts
+
 
 
 def test_aggregation_only(text_path, workbook_path, params_path, output_path, sample_type='Streck'): #, streck_wells_list=[]):
@@ -418,7 +526,7 @@ if __name__ == '__main__':
     
     # i = 4    # i = 1
     
-    
+    # plates = os.listdir('data/plates/original_')
     for i in range(1, 7):
         start = time.time()
             

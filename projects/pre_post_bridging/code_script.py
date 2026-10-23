@@ -149,12 +149,6 @@ def map_plate_to_distribution_log(df, normalization_dict):
     return df1
 
 
-
-
-
-
-
-
 def replace_with_conditional_mean(df):
     """
     For each aptamer (except "other"), replace all gProcessedSignal values with the mean
@@ -418,8 +412,8 @@ def transform_feature_df_MAD_bridging(df1, params):
     df = replace_with_conditional_mean(df)
     # aptamers = list(probe_to_aptamer_dict.values())
     # df = map_to_target_distribution(df, params)
-    # df = map_plate_to_distribution(df, params)
-    df = map_plate_to_distribution_log(df, params)
+    df = map_plate_to_distribution(df, params)
+    # df = map_plate_to_distribution_log(df, params)
     # df['conversion_coefficient'] = df['aptamer'].map(params)
     # if file in streck_files:
     # df['gProcessedSignal'] = df['gProcessedSignal'] * df['conversion_coefficient']
@@ -515,25 +509,25 @@ if __name__ == '__main__':
             # plate = f"OH2026_00{i}"
             
     # i = 2
-    # if i == 3:
-            # if i > -5:
-        alter_scanner_files_MAD_bridging(f'projects/report/data/plates/original/original_with_altered_workbooks/{plate}',
-                    f'projects/report/data/plates/original/original_with_altered_workbooks/{plate}/{plate} Workbook.xlsx',
+        # if plate == 'OH2025_051':
+                # if i > -5:
+        alter_scanner_files_MAD_bridging(f'data/plates/original_with_altered_workbooks/{plate}',
+                    f'data/plates/original_with_altered_workbooks/{plate}/{plate} Workbook.xlsx',
                     
-                    {'Streck': 'data/conversion_coefficients/ds_log_16022026.json',
-                    'NDS': 'data/conversion_coefficients/nds_log_16022026.json'},
-                    f'projects/report/data/plates/madmed_transformed_23022026/{plate}',
+                    {'Streck': 'data/params/pre_hybridization/ds_11022026.json',
+                    'NDS': 'data/params/pre_hybridization/nds_11022026.json'},
+                    f'projects/pre_post_bridging/results/plates/madmed_transformed_03032026/{plate}',
                     
         )
-                # alter_scanner_files_MAD_bridging(f'data/plates/multiple_types_experiment/OH2025_05{i}_altered_workbook',
-                #                     f'data/plates/multiple_types_experiment/OH2025_05{i}_altered_workbook/OH2025_05{i} Workbook.xlsx',
-                #                     {'Streck': 'data/conversion_coefficients/MAD_median_streck_coefficients.json',
-                #                     'nds': 'data/conversion_coefficients/nds_params.json'},
-                #                     f'data/plates/multiple_types_experiment/results/testing_transformation/OH2025_05{i}_for testing',
-                                
-                # )
         print(f"Time for plate {plate}: {time.time() - start} seconds")
-
+                    # alter_scanner_files_MAD_bridging(f'data/plates/multiple_types_experiment/OH2025_05{i}_altered_workbook',
+                    #                     f'data/plates/multiple_types_experiment/OH2025_05{i}_altered_workbook/OH2025_05{i} Workbook.xlsx',
+                    #                     {'Streck': 'data/conversion_coefficients/MAD_median_streck_coefficients.json',
+                    #                     'nds': 'data/conversion_coefficients/nds_params.json'},
+                    #                     f'data/plates/multiple_types_experiment/results/testing_transformation/OH2025_05{i}_for testing',
+                                    
+                    # )
+    
         
 
 

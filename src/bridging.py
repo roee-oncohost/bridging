@@ -535,6 +535,41 @@ def transform_mad_log(streck_df, params, aptamers):
     
     return df
 
+
+def transform_median_only(streck_df, params, aptamers):
+    """
+    Normalize Streck signals so each aptamer's median matches the EDTA median.
+    """
+    df = streck_df.copy()
+    mask = df['aptamer'].isin(aptamers)
+
+    # Parameter lookup
+    param_df = pd.DataFrame.from_dict(params, orient='index')
+    scale_map = (param_df['med_edta'] / param_df['med_streck']).to_dict()
+
+    # Vectorized scaling
+    scale = df.loc[mask, 'aptamer'].map(scale_map)
+    df.loc[mask, 'gProcessedSignal'] *= scale
+
+    return df
+
+
+
+def transform_median_post_anml(df1, params):
+    """
+    For each column in df that appears in med_dict:
+    df[col] = df[col] * med_edta / med_streck
+    """
+    df = df1.copy()
+    for col, vals in params.items():
+        if col in df.columns:
+            med_streck = vals['med_streck']
+            med_edta = vals['med_edta']
+            df[col] = df[col] * med_edta / med_streck
+
+    return df
+
+
 def transform_mad_linear(streck_df, params, aptamers):
     """
     Apply a fitted MAD-based log transform to new S data.
